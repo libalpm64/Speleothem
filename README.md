@@ -1,8 +1,14 @@
+<p align="center">
+  <img src="./Speleothem.png" alt="Speleothem" width="360">
+</p>
+
 # Speleothem
 
 Speleothem is a high-performance, region-threaded Minecraft server fork for large survival and anarchy servers.
 
 It targets Java 25 and Minecraft 26.2, and retains Folia's region-threading model. Speleothem adds production hardening, secure world generation, NBT safety fixes, entity corrections, and network safeguards maintained by libalpm64.
+
+Speleothem was originally a fork of Luminol. Since Luminol no longer exists as an active project, Speleothem now continues independently with its own maintained patch set while preserving upstream attribution.
 
 ## Downloads
 

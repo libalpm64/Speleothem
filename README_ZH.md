@@ -1,8 +1,14 @@
+<p align="center">
+  <img src="./Speleothem.png" alt="Speleothem" width="360">
+</p>
+
 # Speleothem
 
 Speleothem 是一个面向大型生存和无政府服务器的高性能区域线程 Minecraft 服务端分支。
 
 项目目标为 Java 25 和 Minecraft 26.2，并保留 Folia 的区域线程模型。Speleothem 由 libalpm64 维护，包含安全世界生成、NBT 安全修复、实体修正和网络防护。
+
+Speleothem 最初是 Luminol 的分支。由于 Luminol 已不再作为活跃项目存在，Speleothem 现已作为独立项目继续开发，并维护自己的补丁集，同时保留上游署名。
 
 ## 下载
 
