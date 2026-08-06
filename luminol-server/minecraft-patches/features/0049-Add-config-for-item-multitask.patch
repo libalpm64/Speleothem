@@ -15,9 +15,9 @@ index 6c2ddd872a985e49be0c27d2c48bba7c302186a1..e1d953f114c0d2d8b164052b210a1d75
                                  this.player.sendSpawnProtectionMessage(pos);
                              } else if (this.awaitingPositionFromClient == null && (level.mayInteract(this.player, pos) || passthroughSignInteraction)) {
                                  // Paper end - Allow using signs inside spawn protection
-+                                 if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled) { // Luminol - Add item multitask config
++                                 if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled) { // Speleothem - Add item multitask config
                                  this.player.stopUsingItem(); // CraftBukkit - SPIGOT-4706
-+                                } // Luminol - Add item multitask config
++                                } // Speleothem - Add item multitask config
                                  InteractionResult interactionResult = this.player.gameMode.useItemOn(this.player, level, itemStack, hand, blockHit);
                                  if (interactionResult.consumesAction()) {
                                      CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, blockHit.getBlockPos(), itemStack);
@@ -27,13 +27,13 @@ index 6c2ddd872a985e49be0c27d2c48bba7c302186a1..e1d953f114c0d2d8b164052b210a1d75
              // CraftBukkit end
 -            if (this.player.getInventory().getSelectedSlot() != packet.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
 -                this.player.stopUsingItem();
-+            // Luminol start - Add item multitask config
++            // Speleothem start - Add item multitask config
 +            if (!me.earthme.luminol.config.modules.fixes.ItemMultitaskConfig.enabled) {
 +                if (this.player.getInventory().getSelectedSlot() != packet.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
 +                    this.player.stopUsingItem();
 +                }
              }
-+            // Luminol end
++            // Speleothem end
  
              this.player.getInventory().setSelectedSlot(packet.getSlot());
              this.player.resetLastActionTime();

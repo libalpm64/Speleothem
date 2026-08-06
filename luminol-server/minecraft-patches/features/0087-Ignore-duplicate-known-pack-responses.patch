@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: libalpm64 <159192189+libalpm64@users.noreply.github.com>
 Date: Thu, 30 Jul 2026 13:32:55 -0400
-Subject: [PATCH] Ignore duplicate known-pack responses
+Subject: [PATCH] Speleothem: Ignore duplicate known-pack responses
 
 
 diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
@@ -14,7 +14,7 @@ index b80ff19799e9e05f5709c113ee938f8d01d0acc4..05384a70763a8aab25fc1dfc82cfcfa0
          PacketUtils.ensureRunningOnSameThread(packet, this, this.server.packetProcessor());
 -        if (this.synchronizeRegistriesTask == null) {
 -            throw new IllegalStateException("Unexpected response from client: received pack selection, but no negotiation ongoing");
-+        // Luminol start - Ignore duplicate known-pack responses
++        // Speleothem start - Ignore duplicate known-pack responses
 +        SynchronizeRegistriesTask task = this.synchronizeRegistriesTask;
 +        if (task == null || this.currentTask != task) {
 +            LOGGER.debug("Ignoring stale known-pack response from {}", this.gameProfile.name());
@@ -24,7 +24,7 @@ index b80ff19799e9e05f5709c113ee938f8d01d0acc4..05384a70763a8aab25fc1dfc82cfcfa0
 -        this.synchronizeRegistriesTask.handleResponse(packet.knownPacks(), this::send);
 +        task.handleResponse(packet.knownPacks(), this::send);
 +        this.synchronizeRegistriesTask = null;
-+        // Luminol end - Ignore duplicate known-pack responses
++        // Speleothem end - Ignore duplicate known-pack responses
          this.finishCurrentTask(SynchronizeRegistriesTask.TYPE);
      }
  

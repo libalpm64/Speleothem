@@ -5,7 +5,9 @@ import me.earthme.luminol.commands.CommandRegister;
 import me.earthme.luminol.config.flags.TransformedConfig;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,8 +26,22 @@ public class ConfigManager {
     // 3 -> target full path
 
     public static void initConfigs() {
-        registerConfig("luminol", builder.of("luminol", "me.earthme.luminol.config.modules"));
+        final File configDirectory = migrateLegacyConfigDirectory();
+        registerConfig("speleothem", builder.of(configDirectory, "speleothem", "me.earthme.luminol.config.modules"));
         preLoad();
+    }
+
+    private static File migrateLegacyConfigDirectory() {
+        final File configDirectory = new File("speleothem_config");
+        final File legacyDirectory = new File("luminol_config");
+        if (!configDirectory.exists() && legacyDirectory.isDirectory()) {
+            try {
+                Files.move(legacyDirectory.toPath(), configDirectory.toPath());
+            } catch (IOException exception) {
+                throw new RuntimeException("Failed to migrate the legacy config directory", exception);
+            }
+        }
+        return configDirectory;
     }
 
     public static void registerConfig(String name, ConfigsInstance config) {

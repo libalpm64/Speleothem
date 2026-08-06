@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: libalpm64 <159192189+libalpm64@users.noreply.github.com>
 Date: Wed, 29 Jul 2026 10:34:20 -0400
-Subject: [PATCH] Miscellaneous entity corrections
+Subject: [PATCH] Speleothem: Miscellaneous entity corrections
 
 
 diff --git a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
@@ -12,7 +12,7 @@ index 0ae8b5222c5f2f608af352cbaa866c493dd065aa..40752f751fc9f5a60e8cb73cd83ae166
  
      protected void moveAlongTrack(final ServerLevel level) {
          this.behavior.moveAlongTrack(level);
-+        if (this.getVehicle() == null && this.isVehicle()) this.repositionAllPassengers(false); // Luminol - position consistency
++        if (this.getVehicle() == null && this.isVehicle()) this.repositionAllPassengers(false); // Speleothem - position consistency
      }
  
      protected void comeOffTrack(final ServerLevel level) {

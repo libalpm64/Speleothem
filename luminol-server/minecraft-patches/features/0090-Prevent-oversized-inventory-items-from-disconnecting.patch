@@ -1,7 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: libalpm64 <159192189+libalpm64@users.noreply.github.com>
 Date: Thu, 6 Aug 2026 02:18:54 -0400
-Subject: [PATCH] Prevent oversized inventory items from disconnecting players
+Subject: [PATCH] Speleothem: Prevent oversized inventory items from
+ disconnecting players
 
 
 diff --git a/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java b/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java
@@ -9,7 +10,7 @@ index 1879ed63e5bf1d39756e69b1943a72c0769fcfe7..dd9983d35e592061b9c25af4fe6a37dd
 --- a/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java
 +++ b/net/minecraft/network/protocol/game/ClientboundContainerSetSlotPacket.java
 @@ -39,3 +39,16 @@ public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacke
-+    // Luminol start - oversized item fallback
++    // Speleothem start - oversized item fallback
 +    @Override
 +    public boolean hasLargePacketFallback() {
 +        return !this.itemStack.isEmpty();
@@ -20,7 +21,7 @@ index 1879ed63e5bf1d39756e69b1943a72c0769fcfe7..dd9983d35e592061b9c25af4fe6a37dd
 +        connection.send(new ClientboundContainerSetSlotPacket(this.containerId, this.stateId, this.slot, ItemStack.EMPTY));
 +        return true;
 +    }
-+    // Luminol end - oversized item fallback
++    // Speleothem end - oversized item fallback
 +
      @Override
      public PacketType<ClientboundContainerSetSlotPacket> type() {

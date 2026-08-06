@@ -87,7 +87,7 @@ public class TickableStatusBarList {
 
     public void load(@NonNull ValueInput input) {
         final ValueInput statusBarsInput = input
-                .child("luminol")
+                .child("speleothem")
                 .flatMap(luminol -> luminol.child("status_bars"))
                 .orElse(null); // I hate these optionals (x)
 
@@ -119,7 +119,7 @@ public class TickableStatusBarList {
 
     public void save(@NonNull ValueOutput output) {
         final ValueOutput statusBarsOutput = output
-                .child("luminol")
+                .child("speleothem")
                 .child("status_bars");
 
         for (Map.Entry<EnumBarType, TickableStatusBar> barEntry : this.managedBars.entrySet()) {

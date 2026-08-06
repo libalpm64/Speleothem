@@ -1,13 +1,13 @@
-Luminol inherits its licensing from the included upstream projects.
+Speleothem inherits its licensing from the included upstream projects.
 
-Luminol从上游继承了许可证。
+Speleothem从上游继承了许可证。
 
-As such, Luminol is licensed under the
+As such, Speleothem is licensed under the
 [GNU General Public License version 3](licenses/GPL.md); as it inherits it from Folia,
 who in turn inherits it from the original Paper, Spigot, Bukkit and CraftBukkit projects.
 
-因此，Luminol中应当遵守[GNU通用公共许可证-第3版](licenses/GPL.md) 的许可；
-因为Luminol从上游Folia继承了它，而Folia又从其上游的Paper、Spigot、Bukkit和Craftbukkit项目中继承了它。
+因此，Speleothem中应当遵守[GNU通用公共许可证-第3版](licenses/GPL.md) 的许可；
+因为Speleothem从上游Folia继承了它，而Folia又从其上游的Paper、Spigot、Bukkit和Craftbukkit项目中继承了它。
 
 Any author who is _not_ listed below should be presumed to have released their work
 under the original [GPL](licenses/GPL.md) license.

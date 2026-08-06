@@ -49,7 +49,7 @@ public enum EnumBarType {
     }
 
     EnumBarType(Class<? extends TickableStatusBar> clazz, String name, String commandName, String configPath, Supplier<Map<String, Object>> settingsProvider) {
-        this(clazz, name, commandName, new Pair<>("luminol", configPath), settingsProvider);
+        this(clazz, name, commandName, new Pair<>("speleothem", configPath), settingsProvider);
     }
 
     EnumBarType(Class<? extends TickableStatusBar> clazz, String name, String commandName, @NonNull Pair<String, String> configPath, Supplier<Map<String, Object>> settingsProvider) {

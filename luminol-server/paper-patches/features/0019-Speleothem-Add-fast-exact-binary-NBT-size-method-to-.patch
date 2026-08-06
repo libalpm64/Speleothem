@@ -1,19 +1,19 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: libalpm64 <159192189+libalpm64@users.noreply.github.com>
 Date: Mon, 3 Aug 2026 13:29:14 -0400
-Subject: [PATCH] Luminol: Add fast exact binary NBT size method to
+Subject: [PATCH] Speleothem: Add fast exact binary NBT size method to
  CraftItemStack
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
-index 3eea7b5e12a440162ca07113a59cd5ccacf0dd2d..d626d1c58026fcd172633f575e4810228a012fb3 100644
+index 3eea7b5e12a440162ca07113a59cd5ccacf0dd2d..aa8b4c04eaaf92ae0ce2fbb185aef1dfee367317 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 @@ -417,6 +417,20 @@ public final class CraftItemStack extends ItemStack {
          return ret;
      }
  
-+    // Luminol start - fast exact binary NBT size
++    // Speleothem start - fast exact binary NBT size
 +    // Returns this item's encoded NBT size in bytes.
 +    public int getNbtSizeBytes() {
 +        if (this.handle == null || this.handle.isEmpty()) {
@@ -25,7 +25,7 @@ index 3eea7b5e12a440162ca07113a59cd5ccacf0dd2d..d626d1c58026fcd172633f575e481022
 +        ).getOrThrow();
 +        return tag.sizeInBytes();
 +    }
-+    // Luminol end - fast exact binary NBT size
++    // Speleothem end - fast exact binary NBT size
 +
      @Override
      public Map<Enchantment, Integer> getEnchantments() {

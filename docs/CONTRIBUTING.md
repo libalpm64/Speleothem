@@ -1,4 +1,4 @@
-为Luminol贡献代码
+为Speleothem贡献代码
 ===============
 
 [English](./CONTRIBUTING_EN.md) | **中文**
@@ -30,7 +30,7 @@
 
 ## 了解补丁（Patches）
 
-Luminol 使用和 Folia 一样的补丁系统，并为了针对不同部分的修改分成了两个目录：
+Speleothem 使用和 Folia 一样的补丁系统，并为了针对不同部分的修改分成了两个目录：
 
 - `luminol-api` - 对 `Folia-API` / `Paper-API` / `Spigot-API` / `Bukkit-API` 进行的修改。
 - `luminol-server` - 对 Minecraft 标准服务器原有逻辑进行的修改。
@@ -62,7 +62,7 @@ Luminol 使用和 Folia 一样的补丁系统，并为了针对不同部分的�
 
 - 在应用补丁前，基点将会指向未被更改的源码
 - 在基点后的每一个提交都是一个补丁
-- 只有在 Folia 最后一个提交后的提交才会被视为 luminol 补丁
+- 只有在 Folia 最后一个提交后的提交才会被视为 Speleothem 补丁
 
 ## 增加补丁
 

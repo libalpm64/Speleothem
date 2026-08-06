@@ -2,8 +2,8 @@ prop() {
   grep "^[[:space:]]*${1}" gradle.properties | cut -d'=' -f2 | sed 's/^[[:space:]]*//; s/\r//'
 }
 
-project_id="luminol"
-project_id_b="Luminol"
+project_id="speleothem"
+project_id_b="Speleothem"
 
 commitid=$(git log --pretty='%h' -1)
 mcversion=$(prop mcVersion)

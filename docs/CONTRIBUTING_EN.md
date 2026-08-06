@@ -1,4 +1,4 @@
-Contributing to Luminol
+Contributing to Speleothem
 =======================
 
 **English** | [中文](./CONTRIBUTING.md)
@@ -32,7 +32,7 @@ PS: You need to enable long path support in your System and Git before start, so
 
 ## Understanding "Patches"
 
-Luminol uses as the same patching system as Paper,  
+Speleothem uses the same patching system as Paper,
 and has been divided into two directories for the purpose of modifying different parts of it:
 
 - `luminol-api` - Modifications to `Folia-API` / `Paper-API` / `Spigot-API` / `Bukkit-API`.
@@ -65,7 +65,7 @@ BTW, `*-api` and `*-server` and are not normal git repositories.
 
 - Before applying patches, the base will point to unmodified source code.
 - Every commit after the base is a patch.
-- Only commits after the last commit of Folia will be considered as Luminol patches.
+- Only commits after the last commit of Folia will be considered as Speleothem patches.
 
 ## Adding new patches
 

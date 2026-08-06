@@ -18,7 +18,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-rootProject.name = "luminol"
+rootProject.name = "speleothem"
 
 for (name in listOf("luminol-api", "luminol-server")) {
     include(name)
@@ -46,12 +46,12 @@ fun optionalInclude(name: String, op: (ProjectDescriptor.() -> Unit)? = null) {
 
 gradle.lifecycle.beforeProject {
     val mcVersion = providers.gradleProperty("mcVersion").get().trim()
-    val luminolVersionChannel = providers.gradleProperty("channel").get().trim()
-    val luminolBuildNumber = providers.environmentVariable("BUILD_NUMBER").orNull?.trim()?.toInt()
-    val versionString = if (luminolBuildNumber == null) {
+    val speleothemVersionChannel = providers.gradleProperty("channel").get().trim()
+    val speleothemBuildNumber = providers.environmentVariable("BUILD_NUMBER").orNull?.trim()?.toInt()
+    val versionString = if (speleothemBuildNumber == null) {
         "$mcVersion.local-SNAPSHOT"
     } else {
-        "$mcVersion.build.$luminolBuildNumber-${luminolVersionChannel.lowercase()}"
+        "$mcVersion.build.$speleothemBuildNumber-${speleothemVersionChannel.lowercase()}"
     }
     version = versionString
 }

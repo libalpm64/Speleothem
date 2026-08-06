@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Libalpm64 <libalpm@proton.me>
 Date: Mon, 2 Mar 2026 00:00:00 +0000
-Subject: [PATCH] Luminol: Add secure seed V2 with Blake3
+Subject: [PATCH] Speleothem: Add secure seed V2 with Blake3
 
 
 diff --git a/net/minecraft/world/level/levelgen/RandomState.java b/net/minecraft/world/level/levelgen/RandomState.java
@@ -13,8 +13,8 @@ index 7b74440fbbe79c018ad59d24b99da0c6d4a9d007..332138519a740ee3ddbed93a24a067f3
  
      private RandomState(final NoiseGeneratorSettings settings, final HolderGetter<NormalNoise.NoiseParameters> noises, final long seed) {
 -        this.random = settings.getRandomSource().newInstance(seed).forkPositional();
-+        // this.random = settings.getRandomSource().newInstance(seed).forkPositional(); // Luminol - Add secure seed V2 with Blake3
-+        // Luminol start - Add secure seed V2 with Blake3
++        // this.random = settings.getRandomSource().newInstance(seed).forkPositional(); // Speleothem - Add secure seed V2 with Blake3
++        // Speleothem start - Add secure seed V2 with Blake3
 +        final long[] secureWorldSeed = (me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled && me.earthme.luminol.config.modules.function.SecureSeedConfig.version == 2)
 +                ? su.plo.matter.HashingV2.expandLevelSeedTo1024Bits(seed)
 +                : null;
@@ -28,15 +28,15 @@ index 7b74440fbbe79c018ad59d24b99da0c6d4a9d007..332138519a740ee3ddbed93a24a067f3
 +        long oreSeed = (me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled && me.earthme.luminol.config.modules.function.SecureSeedConfig.version == 2)
 +                ? su.plo.matter.HashingV2.getTerrainSeed(secureWorldSeed, su.plo.matter.HashingV2.TerrainType.ORE)
 +                : seed;
-+        // Luminol end
-+        this.random = settings.getRandomSource().newInstance(terrainSeed).forkPositional(); // Luminol - Add secure seed V2 with Blake3
++        // Speleothem end
++        this.random = settings.getRandomSource().newInstance(terrainSeed).forkPositional(); // Speleothem - Add secure seed V2 with Blake3
          this.noises = noises;
 -        this.aquiferRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("aquifer")).forkPositional();
 -        this.oreRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("ore")).forkPositional();
-+        //this.aquiferRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("aquifer")).forkPositional(); // Luminol - Add secure seed V2 with Blake3
-+        //this.oreRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("ore")).forkPositional(); // Luminol - Add secure seed V2 with Blake3
-+        this.aquiferRandom = settings.getRandomSource().newInstance(aquiferSeed).forkPositional(); // Luminol - Add secure seed V2 with Blake3
-+        this.oreRandom = settings.getRandomSource().newInstance(oreSeed).forkPositional(); // Luminol - Add secure seed V2 with Blake3
++        //this.aquiferRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("aquifer")).forkPositional(); // Speleothem - Add secure seed V2 with Blake3
++        //this.oreRandom = this.random.fromHashOf(Identifier.withDefaultNamespace("ore")).forkPositional(); // Speleothem - Add secure seed V2 with Blake3
++        this.aquiferRandom = settings.getRandomSource().newInstance(aquiferSeed).forkPositional(); // Speleothem - Add secure seed V2 with Blake3
++        this.oreRandom = settings.getRandomSource().newInstance(oreSeed).forkPositional(); // Speleothem - Add secure seed V2 with Blake3
          this.noiseIntances = new ConcurrentHashMap<>();
          this.positionalRandoms = new ConcurrentHashMap<>();
          this.surfaceSystem = new SurfaceSystem(this, settings.defaultBlock(), settings.seaLevel(), this.random);
@@ -44,12 +44,12 @@ index 7b74440fbbe79c018ad59d24b99da0c6d4a9d007..332138519a740ee3ddbed93a24a067f3
              private final Map<DensityFunction, DensityFunction> wrapped = new HashMap<>();
  
              private RandomSource newLegacyInstance(final long seedOffset) {
-+                // Luminol start - Add secure seed V2 with Blake3
++                // Speleothem start - Add secure seed V2 with Blake3
 +                if (me.earthme.luminol.config.modules.function.SecureSeedConfig.enabled && me.earthme.luminol.config.modules.function.SecureSeedConfig.version == 2) {
 +                    long climateSeed = su.plo.matter.HashingV2.getTerrainSeed(secureWorldSeed, su.plo.matter.HashingV2.TerrainType.CLIMATE);
 +                    return new su.plo.matter.WorldgenCryptoRandom(0, 0, su.plo.matter.Globals.Salt.UNDEFINED, climateSeed + seed);
 +                }
-+                // Luminol end
++                // Speleothem end
                  return new LegacyRandomSource(seed + seedOffset);
              }
  

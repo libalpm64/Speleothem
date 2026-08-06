@@ -1,7 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: root <root@localhost>
+From: libalpm64 <159192189+libalpm64@users.noreply.github.com>
 Date: Sun, 5 Jul 2026 00:00:00 +0000
-Subject: [PATCH] Remove damageable+stackable item validation for 32k items
+Subject: [PATCH] Speleothem: Remove damageable+stackable item validation for 32k
+ items
 
 
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java

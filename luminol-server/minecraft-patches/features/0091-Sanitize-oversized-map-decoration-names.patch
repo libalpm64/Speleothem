@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: libalpm64 <159192189+libalpm64@users.noreply.github.com>
 Date: Thu, 6 Aug 2026 03:35:56 -0400
-Subject: [PATCH] Sanitize oversized map decoration names
+Subject: [PATCH] Speleothem: Sanitize oversized map decoration names
 
 
 diff --git a/net/minecraft/world/level/saveddata/maps/MapDecoration.java b/net/minecraft/world/level/saveddata/maps/MapDecoration.java
@@ -24,7 +24,7 @@ index eb680797ad3ced5add2dca67c3400750aafbbca6..08c5c3eb046151bbcd4709fb46aa2320
 +        name = sanitizeName(name);
      }
  
-+    // Luminol start - sanitize map decoration names
++    // Speleothem start - sanitize map decoration names
 +    static Optional<Component> sanitizeName(final Optional<Component> name) {
 +        return name.filter(component -> {
 +            try {
@@ -41,7 +41,7 @@ index eb680797ad3ced5add2dca67c3400750aafbbca6..08c5c3eb046151bbcd4709fb46aa2320
 +
 +    private static final int MAX_NAME_PLAIN_LENGTH = 256;
 +    private static final int MAX_NAME_ENCODED_BYTES = 4096;
-+    // Luminol end - sanitize map decoration names
++    // Speleothem end - sanitize map decoration names
 +
      public Identifier getSpriteLocation() {
          return this.type.value().assetId();
@@ -55,14 +55,14 @@ index a9201522bdca5a6e6aae48624d3f95fcb0e3d941..c51794697df0f92e95b608b90dc23203
          }
  
 -        for (MapBanner banner : banners) {
-+        boolean sanitizedBanner = false; // Luminol - sanitize map decoration names
++        boolean sanitizedBanner = false; // Speleothem - sanitize map decoration names
 +        for (MapBanner loadedBanner : banners) {
-+            MapBanner banner = sanitizeBanner(loadedBanner); // Luminol - sanitize map decoration names
-+            sanitizedBanner |= banner != loadedBanner; // Luminol - sanitize map decoration names
++            MapBanner banner = sanitizeBanner(loadedBanner); // Speleothem - sanitize map decoration names
++            sanitizedBanner |= banner != loadedBanner; // Speleothem - sanitize map decoration names
              this.bannerMarkers.put(banner.getId(), banner);
              this.addDecoration(banner.getDecoration(), null, banner.getId(), banner.pos().getX(), banner.pos().getZ(), 180.0, banner.name().orElse(null));
          }
-+        if (sanitizedBanner) this.setDirty(); // Luminol - sanitize map decoration names
++        if (sanitizedBanner) this.setDirty(); // Speleothem - sanitize map decoration names
  
          for (MapFrame frame : frames) {
              this.frameMarkers.put(frame.getId(), frame);
@@ -70,7 +70,7 @@ index a9201522bdca5a6e6aae48624d3f95fcb0e3d941..c51794697df0f92e95b608b90dc23203
              if (banner == null) {
                  return false;
              }
-+            banner = sanitizeBanner(banner); // Luminol - sanitize map decoration names
++            banner = sanitizeBanner(banner); // Speleothem - sanitize map decoration names
  
              if (this.bannerMarkers.remove(banner.getId(), banner)) {
                  this.removeDecoration(banner.getId());
@@ -79,7 +79,7 @@ index a9201522bdca5a6e6aae48624d3f95fcb0e3d941..c51794697df0f92e95b608b90dc23203
              MapBanner expected = iterator.next();
              if (expected.pos().getX() == x && expected.pos().getZ() == z) {
 -                MapBanner current = MapBanner.fromWorld(level, expected.pos());
-+                MapBanner current = sanitizeBanner(MapBanner.fromWorld(level, expected.pos())); // Luminol - sanitize map decoration names
++                MapBanner current = sanitizeBanner(MapBanner.fromWorld(level, expected.pos())); // Speleothem - sanitize map decoration names
                  if (!expected.equals(current)) {
                      iterator.remove();
                      this.removeDecoration(expected.getId());
@@ -87,13 +87,13 @@ index a9201522bdca5a6e6aae48624d3f95fcb0e3d941..c51794697df0f92e95b608b90dc23203
          return this.bannerMarkers.values();
      }
  
-+    // Luminol start - sanitize map decoration names
++    // Speleothem start - sanitize map decoration names
 +    private static @Nullable MapBanner sanitizeBanner(final @Nullable MapBanner banner) {
 +        if (banner == null) return null;
 +        Optional<Component> name = MapDecoration.sanitizeName(banner.name());
 +        return name.equals(banner.name()) ? banner : new MapBanner(banner.pos(), banner.color(), name);
 +    }
-+    // Luminol end - sanitize map decoration names
++    // Speleothem end - sanitize map decoration names
 +
      public synchronized void removedFromFrame(final BlockPos pos, final int entityID) { // Folia - make map data thread-safe
          this.removeDecoration(getFrameKey(entityID));
