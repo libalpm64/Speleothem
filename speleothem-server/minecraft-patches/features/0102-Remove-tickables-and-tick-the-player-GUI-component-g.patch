@@ -66,9 +66,9 @@ index 6d4d69955fc35f77e96646f50fd8bd6cf0e10ba4..9076b6fcf5ce856cd1abe93b8de72347
  
      public void addTickable(final Runnable tickable) {
 -        this.tickables.add(tickable);
-+        throw new UnsupportedOperationException("addTickable is unsupported under region threading"); // Folia - region threading
++        // Folia - region threading tickables are not supported
      }
- 
+
      protected void setId(final String serverId) {
 diff --git a/net/minecraft/server/gui/PlayerListComponent.java b/net/minecraft/server/gui/PlayerListComponent.java
 index 37c9f983ae89c497f44a1b7967d741abf909e0a0..1d8bcdafe4db5d53b2ac114c615d1a9ebc739c52 100644
