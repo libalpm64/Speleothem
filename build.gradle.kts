@@ -16,23 +16,23 @@ paperweight {
 
         patchFile {
             path = "folia-server/build.gradle.kts"
-            outputFile = file("luminol-server/build.gradle.kts")
-            patchFile = file("luminol-server/build.gradle.kts.patch")
+            outputFile = file("speleothem-server/build.gradle.kts")
+            patchFile = file("speleothem-server/build.gradle.kts.patch")
         }
         patchFile {
             path = "folia-api/build.gradle.kts"
-            outputFile = file("luminol-api/build.gradle.kts")
-            patchFile = file("luminol-api/build.gradle.kts.patch")
+            outputFile = file("speleothem-api/build.gradle.kts")
+            patchFile = file("speleothem-api/build.gradle.kts.patch")
         }
         patchRepo("paperApi") {
             upstreamPath = "paper-api"
-            patchesDir = file("luminol-api/paper-patches")
+            patchesDir = file("speleothem-api/paper-patches")
             outputDir = file("paper-api")
         }
         patchDir("foliaApi") {
             upstreamPath = "folia-api"
             excludes = listOf("build.gradle.kts", "build.gradle.kts.patch", "paper-patches")
-            patchesDir = file("luminol-api/folia-patches")
+            patchesDir = file("speleothem-api/folia-patches")
             outputDir = file("folia-api")
         }
     }

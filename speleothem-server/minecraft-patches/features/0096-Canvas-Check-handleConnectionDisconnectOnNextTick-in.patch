@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: purpurcof <purpurcof@users.noreply.github.com>
+Date: Mon, 27 Jul 2026 12:00:00 +0300
+Subject: [PATCH] Canvas Check handleConnectionDisconnectOnNextTick in
+ regionized connection ticks
+
+Folia does not add the handleConnectionDisconnectOnNextTick check in its
+regionized connection tick loops, and keeps ticking connections that
+should be disconnected. Add it back so we match ServerConnectionListener.
+See PaperMC/Paper PR #13616, April 25th 2026.
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
+index 61c86a232dcddb05319d33382596269ed20a8d3d..a5be361d1e9271d81a76bb7b8eff3b88d04b95a4 100644
+--- a/io/papermc/paper/threadedregions/RegionizedServer.java
++++ b/io/papermc/paper/threadedregions/RegionizedServer.java
+@@ -326,6 +326,18 @@ public final class RegionizedServer {
+                 continue;
+             }
+ 
++            // Canvas start - region threading
++
++            // see https://github.com/PaperMC/Paper/pull/13616, April 25th 2026
++
++            // Folia doesn't add this check, and keeps ticking the connection instead,
++            // add this back so we match ServerConnectionListener
++
++            if (conn.handleConnectionDisconnectOnNextTick) {
++                continue;
++            }
++            // Canvas end - region threading
++
+             try {
+                 conn.tick();
+             } catch (final Exception exception) {
+diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+index 058881beccaa49d84658ce1f8a3aeaf711ebff17..73b5c3f8ba5c28b73e673d207c3dbe1edf43bb5f 100644
+--- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
++++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
+@@ -636,6 +636,18 @@ public final class RegionizedWorldData {
+                 continue;
+             }
+ 
++            // Canvas start - region threading
++
++            // see https://github.com/PaperMC/Paper/pull/13616, April 25th 2026
++
++            // Folia doesn't add this check, and keeps ticking the connection instead,
++            // add this back so we match ServerConnectionListener
++
++            if (conn.handleConnectionDisconnectOnNextTick) {
++                continue;
++            }
++            // Canvas end - region threading
++
+             try {
+                 conn.tick();
+             } catch (final Exception exception) {

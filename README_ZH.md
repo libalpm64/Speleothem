@@ -20,10 +20,10 @@ Speleothem 最初是 Luminol 的分支。由于 Luminol 已不再作为活跃项
 git clone https://github.com/libalpm64/Speleothem.git
 cd Speleothem
 ./gradlew applyAllPatches
-./gradlew :luminol-server:createPaperclipJar
+./gradlew :speleothem-server:createPaperclipJar
 ```
 
-可运行的服务端 JAR 位于 `luminol-server/build/libs`。
+可运行的服务端 JAR 位于 `speleothem-server/build/libs`。
 
 ## 补丁署名
 

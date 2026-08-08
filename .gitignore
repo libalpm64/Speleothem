@@ -6,9 +6,9 @@ build
 
 /run
 
-/luminol-server/build.gradle.kts
-/luminol-api/build.gradle.kts
-/luminol-server/src/minecraft/
+/speleothem-server/build.gradle.kts
+/speleothem-api/build.gradle.kts
+/speleothem-server/src/minecraft/
 /folia-server/
 /folia-api/
 /paper-server

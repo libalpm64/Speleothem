@@ -27,12 +27,13 @@ permissions: write-all
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: default
     env:
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
       - name: Checkout Git Repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set Up JDK
         uses: actions/setup-java@v5
@@ -52,8 +53,8 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ env.project_id_b }} CI Artifacts
-          path: luminol-server/build/libs/*-paperclip-*.jar
+          name: Speleothem CI Artifacts
+          path: speleothem-server/build/libs/*-paperclip-*.jar
 
       - name: Set Environment
         if: github.event_name != 'pull_request'

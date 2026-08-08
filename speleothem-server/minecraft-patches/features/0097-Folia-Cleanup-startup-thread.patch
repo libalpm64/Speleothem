@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: purpurcof <purpurcof@users.noreply.github.com>
+Date: Mon, 27 Jul 2026 12:00:00 +0300
+Subject: [PATCH] Folia Cleanup startup thread
+
+Port of PaperMC/Folia PR #465 (Dueris).
+
+Remove the unused RegionizedServer field, let the startup thread return
+after region threading init instead of sleeping forever, and drop the
+finally so the main thread does not run stopServer() if onServerCrash
+itself throws.
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 7840b0e00ab84eab016e971ac0c2693056fb0721..6d4d69955fc35f77e96646f50fd8bd6cf0e10ba4 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -495,8 +495,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     }
+     // Paper end - rewrite chunk system
+     // Folia start - regionised ticking
+-    public final io.papermc.paper.threadedregions.RegionizedServer regionizedServer = new io.papermc.paper.threadedregions.RegionizedServer();
+-
+     @Override
+     public <V> CompletableFuture<V> submit(java.util.function.Supplier<V> task) {
+         if (true) {
+@@ -1358,11 +1356,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                 io.papermc.paper.threadedregions.RegionizedServer.getInstance().init(); // Folia - region threading - only after loading worlds
+                 final long actualDoneTimeMs = System.currentTimeMillis() - org.bukkit.craftbukkit.Main.BOOT_TIME.toEpochMilli(); // Paper - Improve startup message
+                 LOGGER.info("Done ({})! For help, type \"help\"", String.format(java.util.Locale.ROOT, "%.3fs", actualDoneTimeMs / 1000.00D)); // Paper - Improve startup message
+-                for (;;) {
+-                    try {
+-                        Thread.sleep(Long.MAX_VALUE);
+-                    } catch (final InterruptedException ex) {}
+-                }
++                return;
+             }
+             // Folia end - region threading
+             // Spigot start
+@@ -1470,7 +1464,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             }
+ 
+             this.onServerCrash(report);
+-        } finally {
++        } { // Folia - region threading
+             try {
+                 this.stopped = true;
+                 this.stopServer();
