@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: purpurcof <purpurcof@users.noreply.github.com>
+Date: Mon, 27 Jul 2026 12:00:00 +0300
+Subject: [PATCH] Mark RegionShutdownThread shutdown and check it in chat
+
+Add an IS_SHUTDOWN flag set at the start of the shutdown thread run, and
+use it in handleChat instead of server.isStopped() (Folia PR #461).
+
+diff --git a/io/papermc/paper/threadedregions/RegionShutdownThread.java b/io/papermc/paper/threadedregions/RegionShutdownThread.java
+index d5c4e9b82f2ebc135b6747d19678b1a15e808ec8..f512f78d63a3a1df871eb4b5a1343b40b03516e2 100644
+--- a/io/papermc/paper/threadedregions/RegionShutdownThread.java
++++ b/io/papermc/paper/threadedregions/RegionShutdownThread.java
+@@ -17,6 +17,11 @@ import java.util.concurrent.TimeUnit;
+ public class RegionShutdownThread extends ca.spottedleaf.moonrise.common.util.TickThread { // Luminol - Level schedulers - Make public
+ 
+     public static final Logger LOGGER = LogUtils.getClassLogger(); // Luminol - Level schedulers - Make public
++    private static volatile boolean IS_SHUTDOWN = false;
++
++    public static boolean isShutdown() {
++        return IS_SHUTDOWN;
++    }
+ 
+     public ThreadedRegionizer.ThreadedRegion<TickRegions.TickRegionData, TickRegions.TickRegionSectionData> shuttingDown; // Luminol - Level schedulers - Make public
+ 
+@@ -151,6 +156,7 @@ public class RegionShutdownThread extends ca.spottedleaf.moonrise.common.util.Ti
+ 
+     @Override
+     public void run() { // Luminol - Level hot unload apis - Make public
++        IS_SHUTDOWN = true;
+         // await scheduler termination
+         LOGGER.info("Awaiting scheduler termination for 60s...");
+         if (TickRegions.getScheduler().halt(true, TimeUnit.SECONDS.toNanos(60L))) {
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index a2974b70e5e1402f3093b4ba5a005b7994bafa0e..0355e073fb33b92aa221c2c77d982d6297434593 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -2410,7 +2410,7 @@ public class ServerGamePacketListenerImpl
+     public void handleChat(final ServerboundChatPacket packet) {
+         // CraftBukkit start - async chat
+         // SPIGOT-3638
+-        if (this.server.isStopped()) {
++        if (io.papermc.paper.threadedregions.RegionShutdownThread.isShutdown()) { // Folia - region threading
+             return;
+         }
+         // CraftBukkit end

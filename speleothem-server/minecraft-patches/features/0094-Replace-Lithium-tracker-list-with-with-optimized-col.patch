@@ -1,0 +1,90 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: purpurcof <purpurcof@users.noreply.github.com>
+Date: Mon, 27 Jul 2026 12:00:00 +0300
+Subject: [PATCH] Replace Lithium tracker list with with optimized collection
+
+Use fastutil ObjectArrayList for the Lithium entity movement tracker
+collections and pass their backing arrays to the unregister()/
+isUnchangedSince() helpers, avoiding List overhead in the hopper hot path.
+
+diff --git a/net/minecraft/world/level/block/entity/HopperBlockEntity.java b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+index 250deaa9f28024e4e32ccf07afb64d75ad4c31be..6191b9ea9d28235f97ae20dd977f88556fd4504e 100644
+--- a/net/minecraft/world/level/block/entity/HopperBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/HopperBlockEntity.java
+@@ -904,21 +904,18 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+     //Mod count used to avoid transfer attempts that are known to fail (no change since last attempt)
+     private long insertStackListModCount, extractStackListModCount;
+ 
+-    @Nullable
+-    private List<ChunkSectionItemEntityMovementTracker> collectItemEntityTracker;
++    private it.unimi.dsi.fastutil.objects.@Nullable ObjectArrayList<ChunkSectionItemEntityMovementTracker> collectItemEntityTracker; // Leaf - Replace Lithium tracker list with with optimized collection
+     private boolean collectItemEntityTrackerWasEmpty;
+     @Nullable
+     private AABB collectItemEntityBox;
+     private long collectItemEntityAttemptTime;
+ 
+-    @Nullable
+-    private List<ChunkSectionInventoryEntityTracker> extractInventoryEntityTracker;
++    private it.unimi.dsi.fastutil.objects.@Nullable ObjectArrayList<ChunkSectionInventoryEntityTracker> extractInventoryEntityTracker; // Leaf - Replace Lithium tracker list with with optimized collection
+     @Nullable
+     private AABB extractInventoryEntityBox;
+     private long extractInventoryEntityFailedSearchTime;
+ 
+-    @Nullable
+-    private List<ChunkSectionInventoryEntityTracker> insertInventoryEntityTracker;
++    private it.unimi.dsi.fastutil.objects.@Nullable ObjectArrayList<ChunkSectionInventoryEntityTracker> insertInventoryEntityTracker; // Leaf - Replace Lithium tracker list with with optimized collection
+     @Nullable
+     private AABB insertInventoryEntityBox;
+     private long insertInventoryEntityFailedSearchTime;
+@@ -1150,7 +1147,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+     private void invalidateInsertionData() {
+         if (this.level instanceof ServerLevel) {
+             if (this.insertInventoryEntityTracker != null) {
+-                ChunkSectionEntityMovementTracker.unregister(this.insertInventoryEntityTracker);
++                ChunkSectionEntityMovementTracker.unregister(this.insertInventoryEntityTracker.elements()); // Leaf - Replace Lithium tracker list with with optimized collection
+                 this.insertInventoryEntityTracker = null;
+                 this.insertInventoryEntityBox = null;
+                 this.insertInventoryEntityFailedSearchTime = 0L;
+@@ -1167,13 +1164,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+     private void invalidateExtractionData() {
+         if (this.level instanceof ServerLevel) {
+             if (this.extractInventoryEntityTracker != null) {
+-                ChunkSectionEntityMovementTracker.unregister(this.extractInventoryEntityTracker);
++                ChunkSectionEntityMovementTracker.unregister(this.extractInventoryEntityTracker.elements()); // Leaf - Replace Lithium tracker list with with optimized collection
+                 this.extractInventoryEntityTracker = null;
+                 this.extractInventoryEntityBox = null;
+                 this.extractInventoryEntityFailedSearchTime = 0L;
+             }
+             if (this.collectItemEntityTracker != null) {
+-                ChunkSectionEntityMovementTracker.unregister(this.collectItemEntityTracker);
++                ChunkSectionEntityMovementTracker.unregister(this.collectItemEntityTracker.elements()); // Leaf - Replace Lithium tracker list with with optimized collection
+                 this.collectItemEntityTracker = null;
+                 this.collectItemEntityBox = null;
+                 this.collectItemEntityTrackerWasEmpty = false;
+@@ -1308,7 +1305,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+         if (this.insertInventoryEntityTracker == null) {
+             this.initInsertInventoryTracker(world);
+         }
+-        if (ChunkSectionEntityMovementTracker.isUnchangedSince(this.insertInventoryEntityFailedSearchTime, this.insertInventoryEntityTracker)) {
++        if (ChunkSectionEntityMovementTracker.isUnchangedSince(this.insertInventoryEntityFailedSearchTime, this.insertInventoryEntityTracker.elements())) { // Leaf - Replace Lithium tracker list with with optimized collection
+             this.insertInventoryEntityFailedSearchTime = this.tickedGameTime;
+             return null;
+         }
+@@ -1373,7 +1370,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+         if (this.extractInventoryEntityTracker == null) {
+             this.initExtractInventoryTracker(world);
+         }
+-        if (ChunkSectionEntityMovementTracker.isUnchangedSince(this.extractInventoryEntityFailedSearchTime, this.extractInventoryEntityTracker)) {
++        if (ChunkSectionEntityMovementTracker.isUnchangedSince(this.extractInventoryEntityFailedSearchTime, this.extractInventoryEntityTracker.elements())) { // Leaf - Replace Lithium tracker list with with optimized collection
+             this.extractInventoryEntityFailedSearchTime = this.tickedGameTime;
+             return null;
+         }
+@@ -1493,7 +1490,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
+         long modCount = InventoryHelper.getLithiumStackList(hopperBlockEntity).getModCount();
+ 
+         if ((hopperBlockEntity.collectItemEntityTrackerWasEmpty || hopperBlockEntity.myModCountAtLastItemCollect == modCount) &&
+-                ChunkSectionEntityMovementTracker.isUnchangedSince(hopperBlockEntity.collectItemEntityAttemptTime, hopperBlockEntity.collectItemEntityTracker)) {
++                ChunkSectionEntityMovementTracker.isUnchangedSince(hopperBlockEntity.collectItemEntityAttemptTime, hopperBlockEntity.collectItemEntityTracker.elements())) { // Leaf - Replace Lithium tracker list with with optimized collection
+             hopperBlockEntity.collectItemEntityAttemptTime = hopperBlockEntity.tickedGameTime;
+             return java.util.Collections.emptyList();
+         }

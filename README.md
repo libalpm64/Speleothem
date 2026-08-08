@@ -22,10 +22,10 @@ Speleothem requires JDK 25.
 git clone https://github.com/libalpm64/Speleothem.git
 cd Speleothem
 ./gradlew applyAllPatches
-./gradlew :luminol-server:createPaperclipJar
+./gradlew :speleothem-server:createPaperclipJar
 ```
 
-The runnable server jar is produced in `luminol-server/build/libs`.
+The runnable server jar is produced in `speleothem-server/build/libs`.
 
 ## API
 

@@ -1,0 +1,118 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: purpurcof <purpurcof@users.noreply.github.com>
+Date: Mon, 27 Jul 2026 12:00:00 +0300
+Subject: [PATCH] Remove tickables and tick the player GUI component globally
+
+Remove the unused MinecraftServer#tickables list and addTickable, moving
+the player GUI component tick into the regionized global tick (Folia PR
+#464).
+
+diff --git a/io/papermc/paper/threadedregions/RegionizedServer.java b/io/papermc/paper/threadedregions/RegionizedServer.java
+index a5be361d1e9271d81a76bb7b8eff3b88d04b95a4..6d0001447bf2ec507a23b3e1bf8c77b2e3fcebc7 100644
+--- a/io/papermc/paper/threadedregions/RegionizedServer.java
++++ b/io/papermc/paper/threadedregions/RegionizedServer.java
+@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.dedicated.DedicatedServer;
++import net.minecraft.server.gui.PlayerListComponent;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.server.network.ServerGamePacketListenerImpl;
+ import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+@@ -261,6 +262,7 @@ public final class RegionizedServer {
+         // player ping sample
+         // world global tick
+         // connection tick
++        // player gui component
+ 
+         // tick player ping sample
+         this.tickPlayerSample();
+@@ -275,6 +277,9 @@ public final class RegionizedServer {
+ 
+         // player list
+         MinecraftServer.getServer().getPlayerList().tick();
++
++        // player gui component
++        PlayerListComponent.tick();
+     }
+ 
+     private void tickPlayerSample() {
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 6d4d69955fc35f77e96646f50fd8bd6cf0e10ba4..9076b6fcf5ce856cd1abe93b8de7234786d6488f 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -219,7 +219,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     public LevelStorageSource.LevelStorageAccess storageSource;
+     protected final PlayerDataStorage playerDataStorage;
+     private final SavedDataStorage savedDataStorage;
+-    private final List<Runnable> tickables = Lists.newArrayList();
++    // private final List<Runnable> tickables = Lists.newArrayList(); // Folia - region threading
+     // Paper - per-level GameRules
+     private MetricsRecorder metricsRecorder = InactiveMetricsRecorder.INSTANCE;
+     private Consumer<ProfileResults> onMetricsRecordingStopped = results -> this.stopRecordingMetrics();
+@@ -2005,9 +2005,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+ 
+         profiler.popPush("server gui refresh");
+ 
+-        if (false) for (Runnable tickable : this.tickables) { // Folia - region threading - TODO WTF is this?
+-            tickable.run();
+-        }
++        // Folia - region threading
+ 
+         profiler.popPush("send chunks");
+ 
+@@ -2049,7 +2047,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     }
+ 
+     public void addTickable(final Runnable tickable) {
+-        this.tickables.add(tickable);
++        // Folia - region threading tickables are not supported
+     }
+
+     protected void setId(final String serverId) {
+diff --git a/net/minecraft/server/gui/PlayerListComponent.java b/net/minecraft/server/gui/PlayerListComponent.java
+index 37c9f983ae89c497f44a1b7967d741abf909e0a0..1d8bcdafe4db5d53b2ac114c615d1a9ebc739c52 100644
+--- a/net/minecraft/server/gui/PlayerListComponent.java
++++ b/net/minecraft/server/gui/PlayerListComponent.java
+@@ -3,25 +3,30 @@ package net.minecraft.server.gui;
+ import java.util.Vector;
+ import javax.swing.JList;
+ import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.level.ServerPlayer;
+ 
+ public class PlayerListComponent extends JList<String> {
+-    private final MinecraftServer server;
+-    private int tickCount;
++    // Folia start - region threading
++    private static final java.util.concurrent.atomic.AtomicReference<PlayerListComponent> COMPONENT_REF = new java.util.concurrent.atomic.AtomicReference<>(null);
++    private static int TICK = 0;
+ 
+     public PlayerListComponent(final MinecraftServer server) {
+-        this.server = server;
+-        server.addTickable(this::tick);
++        COMPONENT_REF.set(this);
+     }
+ 
+-    public void tick() {
+-        if (this.tickCount++ % 20 == 0) {
+-            Vector<String> players = new Vector<>();
++    public static void tick() {
++        // if the component ref isn't set, the gui was never enabled
++        if (TICK++ % 20 != 0 || COMPONENT_REF.get() == null) return;
+ 
+-            for (int i = 0; i < this.server.getPlayerList().getPlayers().size(); i++) {
+-                players.add(this.server.getPlayerList().getPlayers().get(i).getGameProfile().name());
+-            }
++        final Vector<String> players = new java.util.Vector<>();
+ 
+-            this.setListData(players);
++        final java.util.List<ServerPlayer> playerList = MinecraftServer.getServer().getPlayerList().getPlayers();
++
++        for (final ServerPlayer entityPlayer : playerList) {
++            players.add(entityPlayer.gameProfile.name());
+         }
++
++        COMPONENT_REF.get().setListData(players);
+     }
++    // Folia end - region threading
+ }

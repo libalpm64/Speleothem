@@ -34,16 +34,17 @@
 -    activeFork = fork
 +    val luminol = forks.register("luminol") {
 +        forks = fork
++        serverDirectory = rootDirectory.dir("speleothem-server")
 +        upstream.patchRepo("paperServer") {
 +            upstreamRepo = fork.patchedRepo("paperServer")
-+            patchesDir = rootDirectory.dir("luminol-server/paper-patches")
++            patchesDir = rootDirectory.dir("speleothem-server/paper-patches")
 +            outputDir = rootDirectory.dir("paper-server")
 +        }
 +
 +        upstream.patchDir("foliaServer") {
 +            upstreamPath = "folia-server"
 +            excludes = setOf("src/minecraft", "paper-patches", "minecraft-patches", "build.gradle.kts", "build.gradle.kts.patch")
-+            patchesDir = rootDirectory.dir("luminol-server/folia-patches")
++            patchesDir = rootDirectory.dir("speleothem-server/folia-patches")
 +            outputDir = rootDirectory.dir("folia-server")
 +        }
 +    }
@@ -81,7 +82,7 @@
  
  dependencies {
 -    implementation(project(":folia-api"))
-+    implementation(project(":luminol-api"))
++    implementation(project(":speleothem-api"))
 +    // Luminol start - Dependenices insert
 +    implementation("net.objecthunter:exp4j:0.4.8")
 +    implementation("com.electronwill.night-config:toml:3.9.0") // Night config

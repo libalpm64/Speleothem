@@ -1,0 +1,53 @@
+name: Automatically update Folia commit
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Luminol Repository
+        uses: actions/checkout@v4
+        with:
+          path: 'Luminol'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Folia Repository
+        uses: actions/checkout@v4
+        with:
+          path: 'Folia'
+          repository: "PaperMC/Folia"
+          ref: ver/26.2.x
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Folia Latest Commit Hash
+        id: foliaRef
+        run: |
+          cd Folia
+          echo "foliaRef=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Update foliaRef in Luminol
+        run: |
+          cd Luminol
+          sed -i "s/\(foliaRef\s*=\s*\).*/\1$PAPER_REF/" gradle.properties
+        env:
+          PAPER_REF: ${{ steps.foliaRef.outputs.foliaRef }}
+
+      - name: Check for changes and Write to repository
+        run: |
+          cd Luminol
+          if ! git diff --quiet; then
+            git add gradle.properties
+            git config --global user.email "no-reply@github.com"
+            git config --global user.name "Github Actions"
+            git commit -m "Updated Upstream (Folia)"
+            git push
+          else
+            echo "No changes to commit."
+          fi

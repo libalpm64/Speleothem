@@ -20,7 +20,7 @@ plugins {
 
 rootProject.name = "speleothem"
 
-for (name in listOf("luminol-api", "luminol-server")) {
+for (name in listOf("speleothem-api", "speleothem-server")) {
     include(name)
     file(name).mkdirs()
 }

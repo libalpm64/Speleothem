@@ -31,19 +31,22 @@ public class ChunkSectionInventoryEntityTracker extends ChunkSectionEntityMoveme
         return level.getEntitiesOfClass((Class) Container.class, boundingBox, EntitySelector.CONTAINER_ENTITY_SELECTOR);
     }
 
-    public static @NotNull List<ChunkSectionInventoryEntityTracker> registerAt(ServerLevel world, AABB interactionArea) {
+    public static it.unimi.dsi.fastutil.objects.@NotNull ObjectArrayList<ChunkSectionInventoryEntityTracker> registerAt(ServerLevel world, AABB interactionArea) {
         WorldSectionBox worldSectionBox = WorldSectionBox.entityAccessBox(world, interactionArea);
 
         if (worldSectionBox.chunkX1() == worldSectionBox.chunkX2() &&
                 worldSectionBox.chunkY1() == worldSectionBox.chunkY2() &&
                 worldSectionBox.chunkZ1() == worldSectionBox.chunkZ2()) {
-            return Collections.singletonList(registerAt(
+            return new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(Collections.singletonList(registerAt(
                     CoordinateUtils.getChunkSectionKey(worldSectionBox.chunkX1(), worldSectionBox.chunkY1(), worldSectionBox.chunkZ1()),
                     world
-            ));
+            )));
         }
 
-        List<ChunkSectionInventoryEntityTracker> trackers = new ArrayList<>();
+        int sizeX = worldSectionBox.chunkX2() - worldSectionBox.chunkX1() + 1;
+        int sizeY = worldSectionBox.chunkY2() - worldSectionBox.chunkY1() + 1;
+        int sizeZ = worldSectionBox.chunkZ2() - worldSectionBox.chunkZ1() + 1;
+        it.unimi.dsi.fastutil.objects.ObjectArrayList<ChunkSectionInventoryEntityTracker> trackers = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(sizeX * sizeY * sizeZ);
 
         for (int x = worldSectionBox.chunkX1(); x <= worldSectionBox.chunkX2(); x++) {
             for (int y = worldSectionBox.chunkY1(); y <= worldSectionBox.chunkY2(); y++) {

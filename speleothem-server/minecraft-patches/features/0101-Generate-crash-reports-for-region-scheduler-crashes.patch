@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: purpurcof <purpurcof@users.noreply.github.com>
+Date: Mon, 27 Jul 2026 12:00:00 +0300
+Subject: [PATCH] Generate crash reports for region scheduler crashes
+
+Write a crash report to disk when an uncaught exception kills a tick
+thread or a region fails (Folia PR #463).
+
+diff --git a/io/papermc/paper/threadedregions/TickRegionScheduler.java b/io/papermc/paper/threadedregions/TickRegionScheduler.java
+index 5f4f80c1d4003254fd840f71d86908603b57bfa2..ffd220fee7d6ff980a6ca9eab729fdee9e8e228b 100644
+--- a/io/papermc/paper/threadedregions/TickRegionScheduler.java
++++ b/io/papermc/paper/threadedregions/TickRegionScheduler.java
+@@ -14,12 +14,17 @@ import ca.spottedleaf.moonrise.common.util.TickThread;
+ import com.mojang.logging.LogUtils;
+ import io.papermc.paper.util.TraceUtil;
+ import it.unimi.dsi.fastutil.ints.Int2IntLinkedOpenHashMap;
++import net.minecraft.CrashReport;
++import net.minecraft.CrashReportCategory;
++import net.minecraft.ReportType;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.ServerLevel;
++import net.minecraft.util.Util;
+ import net.minecraft.world.level.ChunkPos;
+ import org.slf4j.Logger;
+ import java.lang.management.ManagementFactory;
+ import java.lang.management.ThreadMXBean;
++import java.nio.file.Path;
+ import java.util.concurrent.ThreadFactory;
+ import java.util.concurrent.TimeUnit;
+ import java.util.concurrent.atomic.AtomicBoolean;
+@@ -337,6 +342,15 @@ public final class TickRegionScheduler {
+     private void uncaughtException(final Thread thread, final Throwable thr) {
+         LOGGER.error("Uncaught exception in tick thread \"" + thread.getName() + "\"", thr);
+ 
++        CrashReport crashReport = CrashReport.forThrowable(thr, "Region Scheduler Crash");
++        MinecraftServer.getServer().fillSystemReport(crashReport.getSystemReport());
++        Path path = MinecraftServer.getServer().getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
++        if (crashReport.saveToFile(path, ReportType.CRASH)) {
++            LOGGER.error("This crash report has been saved to: {}", path.toAbsolutePath());
++        } else {
++            LOGGER.error("We were unable to save this crash report to disk.");
++        }
++
+         // prevent further ticks from occurring
+         // we CANNOT sync, because WE ARE ON A SCHEDULER THREAD
+         this.scheduler.halt();
+@@ -347,6 +361,18 @@ public final class TickRegionScheduler {
+     private void regionFailed(final RegionScheduleHandle handle, final boolean executingTasks, final Throwable thr) {
+         // when a region fails, we need to shut down the server gracefully
+ 
++        CrashReport crashReport = CrashReport.forThrowable(thr, "Region Crash");
++        MinecraftServer.getServer().fillSystemReport(crashReport.getSystemReport());
++        CrashReportCategory crashReportCategory = crashReport.addCategory("Region Context");
++        crashReportCategory.setDetail("Executing Tasks", executingTasks);
++        crashReportCategory.setDetail("RegionScheduleHandle", handle.region == null ? handle == RegionizedServer.getGlobalTickData() ? "Global tick" : "Not available" : handle.region.region);
++        Path path = MinecraftServer.getServer().getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
++        if (crashReport.saveToFile(path, ReportType.CRASH)) {
++            LOGGER.error("This crash report has been saved to: {}", path.toAbsolutePath());
++        } else {
++            LOGGER.error("We were unable to save this crash report to disk.");
++        }
++
+         // prevent further ticks from occurring
+         // we CANNOT sync, because WE ARE ON A SCHEDULER THREAD
+         this.scheduler.halt();
