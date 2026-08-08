@@ -18,3 +18,16 @@ index 7b6a7742140b157a97244f3607a81cb32126217b..7754cf9e92b174bc029304c855cbdae4
                  profiler.startTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PLAYER_SAVE); try { // Folia - profiler
                  this.save(player);
                  } finally { profiler.stopTimer(ca.spottedleaf.leafprofiler.LProfilerRegistry.PLAYER_SAVE); } // Folia - profiler
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index bc390caff901a3b37a5a4ca3619dd9339fa4cb07..6e39d752aef322fc1cc12bf221cff057cad18578 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -208,5 +208,5 @@ import org.slf4j.Logger;
+ 
+ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patches.chunk_system.player.ChunkSystemServerPlayer { // Paper - rewrite chunk system
+     private static final Logger LOGGER = LogUtils.getLogger();
+-    public static final long LAST_SAVE_ABSENT = Long.MIN_VALUE; public long lastSave = System.nanoTime(); // Paper // Folia - threaded regions - changed to nanoTime // Luminol - Fix player auto saving ignores interval
++    public static final long LAST_SAVE_ABSENT = Long.MIN_VALUE; public long lastSave = LAST_SAVE_ABSENT; // Paper // Folia - threaded regions // Speleothem - Fix player auto saving ignores interval
+     private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
+

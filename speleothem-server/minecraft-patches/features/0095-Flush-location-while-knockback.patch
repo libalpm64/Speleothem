@@ -24,10 +24,10 @@ index a447b9fbb579591c62b3d8f8e2527796feefc4a0..1452d34d137280c9ba319e5bd50ad209
                      } else {
                          this.playServerSideSound(SoundEvents.PLAYER_ATTACK_NODAMAGE);
                      }
-@@ -1247,6 +1253,17 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1247,6 +1253,16 @@ public abstract class Player extends Avatar implements ContainerUser {
  
              if (!cancelled) {
-             serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(entity));
+-            serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(entity));
 +                // Leaf start - Flush location while knockback
 +                if (me.earthme.luminol.config.modules.gameplay.Knockback.flushKnockback) {
 +                    entity.needsSync = true;
@@ -42,7 +42,7 @@ index a447b9fbb579591c62b3d8f8e2527796feefc4a0..1452d34d137280c9ba319e5bd50ad209
              entity.hurtMarked = false;
              entity.setDeltaMovement(oldMovement);
              }
-@@ -1364,6 +1381,12 @@ public abstract class Player extends Avatar implements ContainerUser {
+@@ -1364,6 +1380,12 @@ public abstract class Player extends Avatar implements ContainerUser {
          this.itemAttackInteraction(target, weaponItem, damageSource, wasHurt);
          this.damageStatsAndHearts(target, oldLivingEntityHealth);
          this.causeFoodExhaustion(this.level().spigotConfig.combatExhaustion, org.bukkit.event.entity.EntityExhaustionEvent.ExhaustionReason.ATTACK); // CraftBukkit - EntityExhaustionEvent // Spigot - Change to use configurable value

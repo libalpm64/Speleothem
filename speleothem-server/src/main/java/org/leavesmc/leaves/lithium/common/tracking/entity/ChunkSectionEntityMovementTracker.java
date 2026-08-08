@@ -24,9 +24,9 @@ public abstract class ChunkSectionEntityMovementTracker {
 
     public abstract void unregister();
 
-    public static void unregister(ChunkSectionEntityMovementTracker @NotNull [] trackers) {
-        for (ChunkSectionEntityMovementTracker tracker : trackers) {
-            tracker.unregister();
+    public static void unregister(Object @NotNull [] trackers) {
+        for (Object tracker : trackers) {
+            ((ChunkSectionEntityMovementTracker) tracker).unregister();
         }
     }
 
@@ -34,9 +34,9 @@ public abstract class ChunkSectionEntityMovementTracker {
         return this.lastChangeTime <= lastCheckedTime;
     }
 
-    public static boolean isUnchangedSince(long lastCheckedTime, ChunkSectionEntityMovementTracker @NotNull [] trackers) {
-        for (ChunkSectionEntityMovementTracker tracker : trackers) {
-            if (!tracker.isUnchangedSince(lastCheckedTime)) {
+    public static boolean isUnchangedSince(long lastCheckedTime, Object @NotNull [] trackers) {
+        for (Object tracker : trackers) {
+            if (!((ChunkSectionEntityMovementTracker) tracker).isUnchangedSince(lastCheckedTime)) {
                 return false;
             }
         }

@@ -14,7 +14,7 @@ index d5c4e9b82f2ebc135b6747d19678b1a15e808ec8..f512f78d63a3a1df871eb4b5a1343b40
  public class RegionShutdownThread extends ca.spottedleaf.moonrise.common.util.TickThread { // Luminol - Level schedulers - Make public
  
      public static final Logger LOGGER = LogUtils.getClassLogger(); // Luminol - Level schedulers - Make public
-+    private static boolean IS_SHUTDOWN = false;
++    private static volatile boolean IS_SHUTDOWN = false;
 +
 +    public static boolean isShutdown() {
 +        return IS_SHUTDOWN;

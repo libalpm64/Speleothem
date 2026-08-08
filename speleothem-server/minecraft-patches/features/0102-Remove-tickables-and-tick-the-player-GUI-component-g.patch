@@ -66,7 +66,7 @@ index 6d4d69955fc35f77e96646f50fd8bd6cf0e10ba4..9076b6fcf5ce856cd1abe93b8de72347
  
      public void addTickable(final Runnable tickable) {
 -        this.tickables.add(tickable);
-+        throw new UnsupportedOperationException("Unsupported in region threading"); // Folia - region threading
++        throw new UnsupportedOperationException("addTickable is unsupported under region threading"); // Folia - region threading
      }
  
      protected void setId(final String serverId) {

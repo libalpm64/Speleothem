@@ -15,7 +15,7 @@ index fe1560579f9c9572082d52cf910f5916957f5601..5a9263eb6b20b798206443119977e7a1
                  tick.lastPrint = now;
  
 -                final double totalElapsedS = (double)(now - tick.start) / 1.0E9;
-+                final String totalElapsedS = String.format("%.2f", (now - tick.start) / 1.0E9);
++                final String totalElapsedS = String.format(java.util.Locale.ROOT, "%.2f", (now - tick.start) / 1.0E9);
  
                  if (tick.handle instanceof TickRegions.ConcreteRegionTickHandle region) {
                      LOGGER.error(
