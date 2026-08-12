@@ -25,9 +25,11 @@ diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/
 index a3f2e97c1e0c9c2add3c5efd5a5cebe84ace78bf..d47c1b8cc17eb13669fbe21670c3a6eaaa995844 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -3396,4 +3396,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
-         super.knockback(strength, directionX, directionZ);
-         this.entity.hurtMarked = true;
+@@ -3418,6 +3418,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
+     @Override
+     public void unsetFixedPose() {
+         this.getHandle().fixedPose = false;
+         this.getHandle().updatePlayerPose();
      }
 +
 +    // KioCG start - ChunkHot

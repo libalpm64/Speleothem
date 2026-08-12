@@ -254,7 +254,7 @@ index e7579a9873362317dd82b63306cf650af9472574..53449af103c1774f68cb0c296d47e703
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -237,9 +237,11 @@ public abstract class PlayerList {
          // only after setting the connection listener to game type, add the connection to this regions list
-         level.getCurrentWorldData().connections.add(connection);
+         level.getCurrentWorldData().addConnection(player);
          // Folia end - rewrite login process
 +        if (!me.earthme.luminol.config.modules.optimizations.AsyncProtocolChangeConfig.enabled) { // Luminol - Async protocol switch // we will run async switch once these main thread logics became done
          connection.setupInboundProtocol(

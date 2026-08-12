@@ -19,10 +19,9 @@ diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/buk
 index 7a719d31fbc7633a9bb87ea97338190ee3a6047a..b79b9a2ad108c0488d3cc3862f72985059bb4988 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -4020,4 +4020,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
-     default ObjectContents asObjectContents() {
-         return this.getPlayerProfile().asObjectContents();
-     }
+@@ -4051,3 +4051,5 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      */
+     void unsetFixedPose();
 +
 +    long getNearbyChunkHot(); // KioCG
  }

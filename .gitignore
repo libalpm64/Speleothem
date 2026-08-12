@@ -11,8 +11,10 @@ build
 /speleothem-server/src/minecraft/
 /folia-server/
 /folia-api/
+/folia-checkstyle/
 /paper-server
 /paper-api
+/paper-checkstyle
 /luminol-generator.settings.gradle.kts
 /test-plugin.settings.gradle.kts
 

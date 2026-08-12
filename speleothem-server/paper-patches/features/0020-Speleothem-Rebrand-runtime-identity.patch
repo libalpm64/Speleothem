@@ -85,7 +85,7 @@ index 1f8eba1a93d6844bc2e1ddf8c1e261fbf7caa925..c089f04168a306af7cf22e45d904cae6
                      logger.log(Level.SEVERE, "Server version: " + Bukkit.getServer().getVersion());
  
 diff --git a/src/main/resources/logo.png b/src/main/resources/logo.png
-index 2b6037aab645e303df6edbbc8af34dc4b4a55bc5..61f0bd90ed916700adb7fdb20f3d72dfdd8c304e 100644
+index 8b924977b7886df9ab8790b1e4ff9b1c04a2af45..61f0bd90ed916700adb7fdb20f3d72dfdd8c304e 100644
 GIT binary patch
 literal 44013
 zcmeAS@N?(olHy`uVBq!ia0y~yU^oH7983%h3`$m(Cm9$R7>k44ofy`glX=O&z~GV^
@@ -1546,4 +1546,3 @@ z>KdzO^I1VHA5f%eYcETxO4+~?WVuA^U+usD{XgF`F)%oAhce!n4vMLH&TFKl*Dy0M
 zT!;nTd&1Cg4|G&41H+dvQP3UB3%28Gs)1yyK*t0#FkFZp)jAqXple(h7>0V1_@D32
 z2g-{QY+v*LGVmKT9|+hDO6m=_Kv|06iXMowpbT`MD#KQ85NAa!h;(=hx?YnZ3zQ`p
 lMzt_7FpP#6C|wNR1jF{6KS2J*#@*ng?CI*~vd$@?2>|q3QQiOm
-

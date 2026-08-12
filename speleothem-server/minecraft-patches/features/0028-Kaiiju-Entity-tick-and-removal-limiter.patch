@@ -11,10 +11,10 @@ diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/pape
 index 4bbcedaefa3637424eb6592d14fe1bbf42132df9..de95a7bfdf0f2e179c7f87fc4018133e2293701e 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -354,6 +354,7 @@ public final class RegionizedWorldData {
+@@ -349,6 +349,7 @@ public final class RegionizedWorldData {
      private final IteratorSafeOrderedReferenceSet<Mob> navigatingMobs = new IteratorSafeOrderedReferenceSet<>();
-     public final ReferenceList<Entity> trackerEntities = new ReferenceList<>(EMPTY_ENTITY_ARRAY); // Moonrise - entity tracker
-     public final ReferenceList<Entity> trackerUnloadedEntities = new ReferenceList<>(EMPTY_ENTITY_ARRAY); // Moonrise - entity tracker
+     public ReferenceList<Entity> trackerEntities = new ReferenceList<>(EMPTY_ENTITY_ARRAY); // Moonrise - entity tracker
+     public boolean iteratingTrackerEntities;
 +    public final dev.kaiijumc.kaiiju.KaiijuEntityThrottler entityThrottler = new dev.kaiijumc.kaiiju.KaiijuEntityThrottler(); // Kaiiju
  
      // block ticking

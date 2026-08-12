@@ -115,7 +115,7 @@ index 5607f4cc8ca2f620461eb5e97d01d9db0d6b2303..1f8eba1a93d6844bc2e1ddf8c1e261fb
                      if (net.minecraft.world.level.Level.lastPhysicsProblem != null) {
                          logger.log(Level.SEVERE, "------------------------------");
 diff --git a/src/main/resources/logo.png b/src/main/resources/logo.png
-index c06126b92e36566c93b901637926703bbfcc42ff..2b6037aab645e303df6edbbc8af34dc4b4a55bc5 100644
+index 8b924977b7886df9ab8790b1e4ff9b1c04a2af45..2b6037aab645e303df6edbbc8af34dc4b4a55bc5 100644
 GIT binary patch
 literal 32775
 zcmeAS@N?(olHy`uVBq!ia0y~yU|9>o9Bd2>3~iPxE-^6FpYwEa45^5FbN6iN9gj;I
@@ -1422,4 +1422,3 @@ zd0f3;bMyqG0{^G8H@^gL)DzjSa@60`Doc3kyr4BnJ2~7FPJFHUGVfcJ?&%Yp4-SP`
 z*v!^62)g{hYjL~Lw9{c3CR&CrDjIDy@qS-fCtun0*OGy09s9qR^P+y;iuE<F{kr+F
 z{;LZ2$eVtJEDYzQUSIs!x9Zu(<-EWD8?rHA0S)*6Jl%ikd*<31AW2VGKbLh*2~7YA
 C9(le1
-

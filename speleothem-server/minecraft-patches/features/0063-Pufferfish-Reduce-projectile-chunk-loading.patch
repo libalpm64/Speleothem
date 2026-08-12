@@ -12,7 +12,7 @@ diff --git a/io/papermc/paper/threadedregions/RegionizedWorldData.java b/io/pape
 index 01f4611055664020a824afb86a4baf59988ca602..1cfae510cab73375367f6d3cf8502280c64585d9 100644
 --- a/io/papermc/paper/threadedregions/RegionizedWorldData.java
 +++ b/io/papermc/paper/threadedregions/RegionizedWorldData.java
-@@ -339,6 +339,10 @@ public final class RegionizedWorldData {
+@@ -324,7 +324,11 @@ public final class RegionizedWorldData {
  
      private RegionizedServer.WorldLevelData tickData;
  
@@ -21,7 +21,8 @@ index 01f4611055664020a824afb86a4baf59988ca602..1cfae510cab73375367f6d3cf8502280
 +    public long pufferfish$loadedTick = 0L;
 +    // Luminol end
      // connections
-     public final List<Connection> connections = new ArrayList<>();
+     private static final Connection[] EMPTY_CONNECTION_ARRAY = new Connection[0];
+     private final ReferenceList<Connection> connections = new ReferenceList<>(EMPTY_CONNECTION_ARRAY);
  
 diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
 index 721e3b083846fd363a31311196bc4c681969215c..81aafd64cc80038eaafba059373db3682afb8c2c 100644

@@ -25,6 +25,9 @@ for (name in listOf("speleothem-api", "speleothem-server")) {
     file(name).mkdirs()
 }
 
+include("folia-checkstyle")
+file("folia-checkstyle").mkdirs()
+
 optionalInclude("test-plugin")
 optionalInclude("luminol-generator")
 

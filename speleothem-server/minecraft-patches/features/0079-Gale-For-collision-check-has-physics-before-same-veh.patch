@@ -23,7 +23,7 @@ diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity
 index 2cd2414edaf03b693265d734b3649e7940588d5d..63107f64373279dbfcd6dc3fe02cb693ed3f471d 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -2441,8 +2441,8 @@ public abstract class Entity
+@@ -2442,6 +2442,6 @@ public abstract class Entity
      }
  
      public void push(final Entity entity) {
@@ -31,5 +31,3 @@ index 2cd2414edaf03b693265d734b3649e7940588d5d..63107f64373279dbfcd6dc3fe02cb693
          if (!this.isPassengerOfSameVehicle(entity)) {
 -            if (!entity.noPhysics && !this.noPhysics) {
                  if (this.level.paperConfig().collisions.onlyPlayersCollide && !(entity instanceof ServerPlayer || this instanceof ServerPlayer)) return; // Paper - Collision option for requiring a player participant
-                 double xa = entity.getX() - this.getX();
-                 double za = entity.getZ() - this.getZ();

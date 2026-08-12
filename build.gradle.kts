@@ -35,6 +35,17 @@ paperweight {
             patchesDir = file("speleothem-api/folia-patches")
             outputDir = file("folia-api")
         }
+        patchRepo("paperCheckstyle") {
+            upstreamPath = "paper-checkstyle"
+            patchesDir = file("speleothem-checkstyle/paper-patches")
+            outputDir = file("paper-checkstyle")
+        }
+        patchDir("foliaCheckstyle") {
+            upstreamPath = "folia-checkstyle"
+            excludes = listOf("build.gradle.kts.patch", "paper-patches", "config-patches")
+            patchesDir = file("speleothem-checkstyle/folia-patches")
+            outputDir = file("folia-checkstyle")
+        }
     }
 }
 
