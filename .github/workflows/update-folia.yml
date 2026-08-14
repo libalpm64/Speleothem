@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Luminol Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: 'Luminol'
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout Folia Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: 'Folia'
           repository: "PaperMC/Folia"
