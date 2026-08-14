@@ -453,9 +453,6 @@ public class LinearRegionFile implements IRegionFile {
                 } finally {
                     synchronized (flushLock) {
                         file.flushQueued = false;
-                        // Keep failed data dirty, but do not retry a permanent
-                        // filesystem or format error every SAVE_DELAY_MS forever.
-                        // A later write or an explicit server flush can retry it.
                         if (!flushFailed && file.hasPendingSave()) {
                             file.flushQueued = true;
                             pendingFlush.add(file);
@@ -668,9 +665,6 @@ public class LinearRegionFile implements IRegionFile {
     @Override
     public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) throws IOException {
         final ChunkBuffer chunkBuffer = new ChunkBuffer(pos, false);
-        // Moonrise closes this stream before invoking the write callback. Do not
-        // add another buffer here: ChunkBuffer must always contain every byte
-        // written so far when the callback snapshots it.
         final DataOutputStream out = new DataOutputStream(chunkBuffer);
 
         return new MoonriseRegionFileIO.RegionDataController.WriteData(
