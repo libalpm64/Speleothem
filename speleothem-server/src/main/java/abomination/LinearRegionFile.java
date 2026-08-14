@@ -365,6 +365,12 @@ public class LinearRegionFile implements IRegionFile {
         }
     }
 
+    private boolean hasPendingSave() {
+        synchronized (markedToSaveLock) {
+            return markedToSave;
+        }
+    }
+
     public static int SAVE_THREAD_MAX_COUNT = 6;
     public static int SAVE_DELAY_MS = 100;
     public static boolean USE_VIRTUAL_THREAD = true;
@@ -438,14 +444,19 @@ public class LinearRegionFile implements IRegionFile {
         final ExecutorService exec = getSaveExecutor();
         for (final LinearRegionFile file : batch) {
             exec.execute(() -> {
+                boolean flushFailed = false;
                 try {
                     file.flush();
                 } catch (IOException e) {
+                    flushFailed = true;
                     LOGGER.error("Region file {} flush failed", file.regionFile, e);
                 } finally {
                     synchronized (flushLock) {
                         file.flushQueued = false;
-                        if (file.markedToSave) {
+                        // Keep failed data dirty, but do not retry a permanent
+                        // filesystem or format error every SAVE_DELAY_MS forever.
+                        // A later write or an explicit server flush can retry it.
+                        if (!flushFailed && file.hasPendingSave()) {
                             file.flushQueued = true;
                             pendingFlush.add(file);
                         }
@@ -657,7 +668,10 @@ public class LinearRegionFile implements IRegionFile {
     @Override
     public MoonriseRegionFileIO.RegionDataController.WriteData moonrise$startWrite(CompoundTag data, ChunkPos pos) throws IOException {
         final ChunkBuffer chunkBuffer = new ChunkBuffer(pos, false);
-        final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(chunkBuffer));
+        // Moonrise closes this stream before invoking the write callback. Do not
+        // add another buffer here: ChunkBuffer must always contain every byte
+        // written so far when the callback snapshots it.
+        final DataOutputStream out = new DataOutputStream(chunkBuffer);
 
         return new MoonriseRegionFileIO.RegionDataController.WriteData(
                 data, MoonriseRegionFileIO.RegionDataController.WriteData.WriteResult.WRITE,
