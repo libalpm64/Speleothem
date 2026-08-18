@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: libalpm64 <libalpm64@users.noreply.github.com>
+Date: Tue, 18 Aug 2026 00:00:00 +0000
+Subject: [PATCH] Preserve orientation across deferred neighbor updates
+
+Compute experimental redstone orientation before handing a foreign neighbor
+update to its owning region so the one-tick mailbox does not lose direction.
+
+diff --git a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
+index 24870bf..c84a0c2 100644
+--- a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
++++ b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
+@@ -195,13 +195,6 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+         public boolean runNext(final Level level) {
+             Direction direction = NeighborUpdater.UPDATE_ORDER[this.idx++];
+             BlockPos neighborPos = this.sourcePos.relative(direction);
+-            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, neighborPos, 25)) {
+-                this.owner.deferForeignUpdate(
+-                    neighborPos, new DeferredNeighborUpdate(neighborPos, this.sourceBlock, this.orientation, this.sourcePos)
+-                );
+-            }
+-            BlockState state = !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, neighborPos, 25) ? null : level.getBlockStateIfLoaded(neighborPos); // Folia - block updates in unloaded chunks
+-            if (state != null) { // Folia - block updates in unloaded chunks
+             Orientation orientation = null;
+             if (level.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
+                 if (this.orientation == null) {
+@@ -212,7 +205,13 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+ 
+                 orientation = this.orientation.withFront(direction);
+             }
+-
++            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, neighborPos, 25)) {
++                this.owner.deferForeignUpdate(
++                    neighborPos, new DeferredNeighborUpdate(neighborPos, this.sourceBlock, orientation, this.sourcePos)
++                );
++            }
++            BlockState state = !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, neighborPos, 25) ? null : level.getBlockStateIfLoaded(neighborPos); // Folia - block updates in unloaded chunks
++            if (state != null) { // Folia - block updates in unloaded chunks
+             NeighborUpdater.executeUpdate(level, state, neighborPos, this.sourceBlock, orientation, false, this.sourcePos); // Paper - Add source block to BlockPhysicsEvent
+             } // Folia - block updates in unloaded chunks
+             if (this.idx < NeighborUpdater.UPDATE_ORDER.length && NeighborUpdater.UPDATE_ORDER[this.idx] == this.skipDirection) {
