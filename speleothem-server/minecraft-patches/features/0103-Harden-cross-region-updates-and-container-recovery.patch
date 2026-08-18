@@ -1,0 +1,155 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: libalpm64 <libalpm64@users.noreply.github.com>
+Date: Tue, 18 Aug 2026 00:00:00 +0000
+Subject: [PATCH] Harden cross-region updates and container recovery
+
+Keep redstone scans loaded-safe, isolate failed neighbor updates, and resynchronize container menus after update failures or player death.
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 692b6fe..2a7a2cc 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -1346,6 +1346,10 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     @Override
+     public void die(final DamageSource source) {
+         // this.gameEvent(GameEvent.ENTITY_DIE); // Paper - move below event cancellation check
++        // Speleothem - never leave a container menu active across death/event cancellation.
++        if (this.containerMenu != this.inventoryMenu) {
++            this.closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason.DEATH);
++        }
+         boolean showDeathMessage = this.level().getGameRules().get(GameRules.SHOW_DEATH_MESSAGES);
+         // CraftBukkit start - fire PlayerDeathEvent
+         if (this.isRemoved()) {
+diff --git a/net/minecraft/world/level/block/RedStoneWireBlock.java b/net/minecraft/world/level/block/RedStoneWireBlock.java
+index 957c45b..1efb3df 100644
+--- a/net/minecraft/world/level/block/RedStoneWireBlock.java
++++ b/net/minecraft/world/level/block/RedStoneWireBlock.java
+@@ -219,17 +219,21 @@ public class RedStoneWireBlock extends Block {
+             RedstoneSide value = state.getValue(PROPERTY_BY_DIRECTION.get(direction));
+             if (value != RedstoneSide.NONE && (currState = (level instanceof net.minecraft.server.level.ServerLevel serverLevel && !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(serverLevel, blockPos, 25) ? null : level.getBlockStateIfLoaded(blockPos))) != null && !currState.is(this)) { // Folia - block updates in unloaded chunks
+                 blockPos.move(Direction.DOWN);
+-                BlockState blockStateDown = level.getBlockState(blockPos);
++                BlockState blockStateDown = level.getBlockStateIfLoaded(blockPos);
++                if (blockStateDown == null) continue;
+                 if (blockStateDown.is(this)) {
+                     BlockPos neighborPos = blockPos.relative(direction.getOpposite());
+-                    level.neighborShapeChanged(direction.getOpposite(), blockPos, neighborPos, level.getBlockState(neighborPos), updateFlags, updateLimit);
++                    BlockState neighborState = level.getBlockStateIfLoaded(neighborPos);
++                    if (neighborState != null) level.neighborShapeChanged(direction.getOpposite(), blockPos, neighborPos, neighborState, updateFlags, updateLimit);
+                 }
+ 
+                 blockPos.setWithOffset(pos, direction).move(Direction.UP);
+-                BlockState blockStateUp = level.getBlockState(blockPos);
++                BlockState blockStateUp = level.getBlockStateIfLoaded(blockPos);
++                if (blockStateUp == null) continue;
+                 if (blockStateUp.is(this)) {
+                     BlockPos neighborPos = blockPos.relative(direction.getOpposite());
+-                    level.neighborShapeChanged(direction.getOpposite(), blockPos, neighborPos, level.getBlockState(neighborPos), updateFlags, updateLimit);
++                    BlockState neighborState = level.getBlockStateIfLoaded(neighborPos);
++                    if (neighborState != null) level.neighborShapeChanged(direction.getOpposite(), blockPos, neighborPos, neighborState, updateFlags, updateLimit);
+                 }
+             }
+         }
+diff --git a/net/minecraft/world/level/block/TripWireBlock.java b/net/minecraft/world/level/block/TripWireBlock.java
+index e19a82e..deeecba 100644
+--- a/net/minecraft/world/level/block/TripWireBlock.java
++++ b/net/minecraft/world/level/block/TripWireBlock.java
+@@ -132,7 +132,8 @@ public class TripWireBlock extends Block {
+             for (int i = 1; i < 42; i++) {
+                 BlockPos testPos = pos.relative(direction, i);
+                 if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, testPos, 4)) break; // Folia - region threading
+-                BlockState block = level.getBlockState(testPos);
++                BlockState block = level.getBlockStateIfLoaded(testPos);
++                if (block == null) break; // Speleothem - never read across an unloaded region
+                 if (block.is(this.hook)) {
+                     if (block.getValue(TripWireHookBlock.FACING) == direction.getOpposite()) {
+                         TripWireHookBlock.calculateState(level, testPos, block, false, true, i, state);
+diff --git a/net/minecraft/world/level/block/TripWireHookBlock.java b/net/minecraft/world/level/block/TripWireHookBlock.java
+index db1835e..9698ff5 100644
+--- a/net/minecraft/world/level/block/TripWireHookBlock.java
++++ b/net/minecraft/world/level/block/TripWireHookBlock.java
+@@ -129,7 +129,8 @@ public class TripWireHookBlock extends Block {
+             for (int i = 1; i < 42; i++) {
+                 BlockPos testPos = pos.relative(direction, i);
+                 if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, testPos, 4)) return; // Folia - region threading
+-                BlockState wireState = level.getBlockState(testPos);
++                BlockState wireState = level.getBlockStateIfLoaded(testPos);
++                if (wireState == null) return; // Speleothem - never read across an unloaded region
+                 if (wireState.is(Blocks.TRIPWIRE_HOOK)) {
+                     if (wireState.getValue(FACING) == direction.getOpposite()) {
+                         receiverPos = i;
+@@ -171,7 +172,8 @@ public class TripWireHookBlock extends Block {
+                 Direction opposite = direction.getOpposite();
+                 level.setBlock(testPos, newState.setValue(FACING, opposite), Block.UPDATE_ALL);
+                 notifyNeighbors(block, level, testPos, opposite);
+-                if (!level.getBlockState(pos).is(Blocks.TRIPWIRE_HOOK)) {
++                BlockState currentHook = level.getBlockStateIfLoaded(pos);
++                if (currentHook == null || !currentHook.is(Blocks.TRIPWIRE_HOOK)) {
+                     onRemoved(newState, level, pos);
+                     return;
+                 }
+@@ -188,7 +190,8 @@ public class TripWireHookBlock extends Block {
+             if (!cancelledEmitterHook) { // Paper - Call BlockRedstoneEvent
+             emitState(level, pos, attached, powered, wasAttached, wasPowered);
+             if (!isBeingDestroyed) {
+-                if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.skipTripwireHookPlacementValidation || level.getBlockState(pos).is(Blocks.TRIPWIRE_HOOK)) // Paper - Validate tripwire hook placement before update
++                BlockState currentHook = level.getBlockStateIfLoaded(pos);
++                if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.skipTripwireHookPlacementValidation || (currentHook != null && currentHook.is(Blocks.TRIPWIRE_HOOK))) // Paper - Validate tripwire hook placement before update
+                 level.setBlock(pos, newState.setValue(FACING, direction), Block.UPDATE_ALL);
+                 if (canUpdate) {
+                     notifyNeighbors(block, level, pos, direction);
+@@ -204,9 +207,10 @@ public class TripWireHookBlock extends Block {
+                         // Luminol start - tripwire and tripwireHook dupe
+                         if (me.earthme.luminol.config.modules.function.TripwireBehaviorConfig.enabled) {
+                             level.setBlock(testPos, wireData.trySetValue(ATTACHED, attached), Block.UPDATE_ALL);
+-                            level.getBlockState(testPos);
++                            level.getBlockStateIfLoaded(testPos);
+                         } else {
+-                            BlockState testPosState = level.getBlockState(testPos);
++                            BlockState testPosState = level.getBlockStateIfLoaded(testPos);
++                            if (testPosState == null) continue;
+                             if (testPosState.is(Blocks.TRIPWIRE) || testPosState.is(Blocks.TRIPWIRE_HOOK)) {
+                                 if (!io.papermc.paper.configuration.GlobalConfiguration.get().blockUpdates.disableTripwireUpdates || !testPosState.is(Blocks.TRIPWIRE)) level.setBlock(testPos, wireData.trySetValue(ATTACHED, attached), Block.UPDATE_ALL); // Paper - prevent tripwire from updating
+                             }
+diff --git a/net/minecraft/world/level/redstone/NeighborUpdater.java b/net/minecraft/world/level/redstone/NeighborUpdater.java
+index 44dbe6f..646de98 100644
+--- a/net/minecraft/world/level/redstone/NeighborUpdater.java
++++ b/net/minecraft/world/level/redstone/NeighborUpdater.java
+@@ -17,6 +17,19 @@ import org.jspecify.annotations.Nullable;
+ public interface NeighborUpdater {
+     Direction[] UPDATE_ORDER = new Direction[]{Direction.WEST, Direction.EAST, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH};
+ 
++    // Speleothem - a failed cross-region update must not leave an inventory screen half-open.
++    static void isolateFailedUpdate(final Level level, final BlockPos pos, final Throwable error) {
++        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
++            for (final net.minecraft.server.level.ServerPlayer player : serverLevel.getLocalPlayers()) {
++                if (player.containerMenu != player.inventoryMenu) {
++                    player.closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason.UNLOADED);
++                }
++                player.inventoryMenu.broadcastChanges();
++            }
++        }
++        net.minecraft.server.MinecraftServer.LOGGER.error("Skipping failed neighbor update at {}", pos.toShortString(), error);
++    }
++
+     void shapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, @Block.UpdateFlags int updateFlags, int updateLimit);
+ 
+     void neighborChanged(BlockPos pos, Block changedBlock, @Nullable Orientation orientation);
+@@ -53,7 +66,7 @@ public interface NeighborUpdater {
+                 CrashReportCategory.populateBlockDetails(ownCategory, level, pos, currentState);
+                 CrashReportCategory neighborCategory = report.addCategory("Neighbor block");
+                 CrashReportCategory.populateBlockDetails(neighborCategory, level, neighborPos, neighborState);
+-                throw new ReportedException(report);
++                isolateFailedUpdate((level instanceof Level actual) ? actual : null, pos, new ReportedException(report));
+             }
+         }
+     }
+@@ -109,7 +122,7 @@ public interface NeighborUpdater {
+                 }
+             );
+             CrashReportCategory.populateBlockDetails(category, level, pos, state);
+-            throw new ReportedException(report);
++            isolateFailedUpdate(level, pos, new ReportedException(report));
+         }
+     }
+ }
