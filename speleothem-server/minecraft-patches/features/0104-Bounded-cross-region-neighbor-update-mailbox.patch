@@ -1,0 +1,88 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: libalpm64 <libalpm64@users.noreply.github.com>
+Date: Tue, 18 Aug 2026 00:00:00 +0000
+Subject: [PATCH] Add bounded cross-region neighbor-update mailbox
+
+Defer loaded foreign-region updates onto Folia's owning task queue with a
+bounded, deduplicated mailbox. Unloaded targets retain the existing drop
+behavior and overflow is observable through telemetry.
+
+diff --git a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
+index 16a0a78..9a76301 100644
+--- a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
++++ b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
+@@ -4,9 +4,12 @@ import com.mojang.logging.LogUtils;
+ import java.util.ArrayDeque;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.function.Consumer;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Direction;
++import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.world.flag.FeatureFlags;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.block.Block;
+@@ -16,6 +19,9 @@ import org.slf4j.Logger;
+ 
+ public class CollectingNeighborUpdater implements NeighborUpdater {
+     private static final Logger LOGGER = LogUtils.getLogger();
++    private static final int MAX_DEFERRED_UPDATES = 4096;
++    private static final AtomicInteger DEFERRED_UPDATE_COUNT = new AtomicInteger();
++    private final ConcurrentHashMap<DeferredUpdateKey, Boolean> deferredUpdates = new ConcurrentHashMap<>();
+     private final Level level;
+     private final int maxChainedNeighborUpdates;
+     private final ArrayDeque<CollectingNeighborUpdater.NeighborUpdates> stack = new ArrayDeque<>();
+@@ -66,6 +72,9 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+     }
+ 
+     private void addAndRun(final BlockPos pos, final CollectingNeighborUpdater.NeighborUpdates update) {
++        if (this.deferForeignUpdate(pos, update)) {
++            return;
++        }
+         ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(this.level, pos, "Adding block without owning region"); // Folia - region threading
+         boolean runningAlready = this.count > 0;
+         boolean tooManyUpdates = this.maxChainedNeighborUpdates >= 0 && this.count >= this.maxChainedNeighborUpdates;
+@@ -85,6 +94,41 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+         }
+     }
+ 
++    private boolean deferForeignUpdate(final BlockPos pos, final CollectingNeighborUpdater.NeighborUpdates update) {
++        if (!(this.level instanceof ServerLevel serverLevel)
++            || ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(serverLevel, pos)) {
++            return false;
++        }
++
++        if (serverLevel.getChunkIfLoaded(pos) == null) {
++            LOGGER.debug("Dropping neighbor update for unloaded position {}", pos.toShortString());
++            return true;
++        }
++
++        final DeferredUpdateKey key = new DeferredUpdateKey(pos.asLong(), update.getClass(), update.hashCode());
++        if (this.deferredUpdates.putIfAbsent(key, Boolean.TRUE) != null) {
++            return true;
++        }
++        if (DEFERRED_UPDATE_COUNT.incrementAndGet() > MAX_DEFERRED_UPDATES) {
++            this.deferredUpdates.remove(key);
++            DEFERRED_UPDATE_COUNT.decrementAndGet();
++            LOGGER.warn("Deferred neighbor-update mailbox full; dropping update at {}", pos.toShortString());
++            return true;
++        }
++
++        io.papermc.paper.threadedregions.RegionizedServer.getInstance().taskQueue.queueTickTaskQueue(
++            serverLevel, pos.getX() >> 4, pos.getZ() >> 4, () -> {
++                this.deferredUpdates.remove(key);
++                DEFERRED_UPDATE_COUNT.decrementAndGet();
++                this.addAndRun(pos, update);
++            }
++        );
++        return true;
++    }
++
++    private record DeferredUpdateKey(long position, Class<?> updateType, int updateHash) {
++    }
++
+     private void runUpdates() {
+         try {
+             while (!this.stack.isEmpty() || !this.addedThisLayer.isEmpty()) {
