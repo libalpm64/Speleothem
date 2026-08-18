@@ -8,7 +8,7 @@ bounded, deduplicated mailbox. Unloaded targets retain the existing drop
 behavior and overflow is observable through telemetry.
 
 diff --git a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
-index 16a0a78..9a76301 100644
+index 16a0a78..24870bf 100644
 --- a/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
 +++ b/net/minecraft/world/level/redstone/CollectingNeighborUpdater.java
 @@ -4,9 +4,12 @@ import com.mojang.logging.LogUtils;
@@ -34,7 +34,12 @@ index 16a0a78..9a76301 100644
      private final Level level;
      private final int maxChainedNeighborUpdates;
      private final ArrayDeque<CollectingNeighborUpdater.NeighborUpdates> stack = new ArrayDeque<>();
-@@ -66,6 +72,9 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+@@ -62,10 +68,13 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+     public void updateNeighborsAtExceptFromFacing(
+         final BlockPos pos, final Block block, final @Nullable Direction skipDirection, final @Nullable Orientation orientation
+     ) {
+-        this.addAndRun(pos, new CollectingNeighborUpdater.MultiNeighborUpdate(pos.immutable(), block, orientation, skipDirection));
++        this.addAndRun(pos, new CollectingNeighborUpdater.MultiNeighborUpdate(this, pos.immutable(), block, orientation, skipDirection));
      }
  
      private void addAndRun(final BlockPos pos, final CollectingNeighborUpdater.NeighborUpdates update) {
@@ -86,3 +91,56 @@ index 16a0a78..9a76301 100644
      private void runUpdates() {
          try {
              while (!this.stack.isEmpty() || !this.addedThisLayer.isEmpty()) {
+@@ -127,6 +171,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+     }
+ 
+     private static final class MultiNeighborUpdate implements CollectingNeighborUpdater.NeighborUpdates {
++        private final CollectingNeighborUpdater owner;
+         private final BlockPos sourcePos;
+         private final Block sourceBlock;
+         private @Nullable Orientation orientation;
+@@ -134,8 +179,9 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+         private int idx = 0;
+ 
+         public MultiNeighborUpdate(
+-            final BlockPos sourcePos, final Block sourceBlock, final @Nullable Orientation orientation, final @Nullable Direction skipDirection
++            final CollectingNeighborUpdater owner, final BlockPos sourcePos, final Block sourceBlock, final @Nullable Orientation orientation, final @Nullable Direction skipDirection
+         ) {
++            this.owner = owner;
+             this.sourcePos = sourcePos;
+             this.sourceBlock = sourceBlock;
+             this.orientation = orientation;
+@@ -149,6 +195,11 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+         public boolean runNext(final Level level) {
+             Direction direction = NeighborUpdater.UPDATE_ORDER[this.idx++];
+             BlockPos neighborPos = this.sourcePos.relative(direction);
++            if (!ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, neighborPos, 25)) {
++                this.owner.deferForeignUpdate(
++                    neighborPos, new DeferredNeighborUpdate(neighborPos, this.sourceBlock, this.orientation, this.sourcePos)
++                );
++            }
+             BlockState state = !ca.spottedleaf.moonrise.common.util.TickThread.isTickThreadFor(level, neighborPos, 25) ? null : level.getBlockStateIfLoaded(neighborPos); // Folia - block updates in unloaded chunks
+             if (state != null) { // Folia - block updates in unloaded chunks
+             Orientation orientation = null;
+@@ -182,6 +233,21 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
+         }
+     }
+ 
++    private record DeferredNeighborUpdate(BlockPos pos, Block block, @Nullable Orientation orientation, BlockPos sourcePos)
++        implements CollectingNeighborUpdater.NeighborUpdates {
++        @Override
++        public boolean runNext(final Level level) {
++            BlockState state = level.getBlockStateIfLoaded(this.pos);
++            if (state != null) NeighborUpdater.executeUpdate(level, state, this.pos, this.block, this.orientation, false, this.sourcePos);
++            return false;
++        }
++
++        @Override
++        public void forEachUpdatedPos(final Consumer<BlockPos> output) {
++            output.accept(this.pos);
++        }
++    }
++
+     private interface NeighborUpdates {
+         boolean runNext(Level level);
+ 
