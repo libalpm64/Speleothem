@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: libalpm64 <libalpm64@users.noreply.github.com>
+Date: Tue, 18 Aug 2026 00:00:00 +0000
+Subject: [PATCH] Flush region-owned player data on container close
+
+Persist player-backed inventory state at container transitions, throttled to
+avoid turning frequent GUI interactions into unbounded disk I/O.
+
+diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
+index 2a7a2cc..da64bce 100644
+--- a/net/minecraft/server/level/ServerPlayer.java
++++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -2502,10 +2502,16 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+     }
+     @Override
+     public void closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
++        final boolean hadContainer = this.containerMenu != this.inventoryMenu;
+         org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(this, reason); // CraftBukkit
+         // Paper end - Inventory close reason
+         this.connection.send(new ClientboundContainerClosePacket(this.containerMenu.containerId));
+         this.doCloseContainer();
++        if (hadContainer && (reason == org.bukkit.event.inventory.InventoryCloseEvent.Reason.DEATH
++            || this.lastSave == LAST_SAVE_ABSENT
++            || System.nanoTime() - this.lastSave >= 2_000_000_000L)) {
++            this.level().getServer().getPlayerList().savePlayerData(this);
++        }
+     }
+ 
+     // Paper start - special close for unloaded inventory
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 13e183b..b4a4fd2 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -509,6 +509,11 @@ public abstract class PlayerList {
+         }
+     }
+ 
++    // Speleothem - region-owned immediate persistence for inventory transitions.
++    public void savePlayerData(final ServerPlayer player) {
++        this.save(player);
++    }
++
+     public net.kyori.adventure.text.@Nullable Component remove(final ServerPlayer player) { // CraftBukkit - return string // Paper - return Component
+         // Paper start - Fix kick event leave message not being sent
+         return this.remove(player, net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.configuration.GlobalConfiguration.get().messages.useDisplayNameInQuitMessage ? player.getBukkitEntity().displayName() : io.papermc.paper.adventure.PaperAdventure.asAdventure(player.getDisplayName())));
